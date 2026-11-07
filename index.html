@@ -1,0 +1,684 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorteio de Cores</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #17172d, #29294d);
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 650px;
+    background: #ffffff;
+    color: #222;
+    border-radius: 22px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 15px 50px rgba(0,0,0,.35);
+}
+
+h1 {
+    font-size: 30px;
+    margin-bottom: 10px;
+    color: #252547;
+}
+
+.subtitle {
+    color: #777;
+    margin-bottom: 25px;
+}
+
+input {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 12px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-size: 16px;
+    outline: none;
+}
+
+input:focus {
+    border-color: #5656c9;
+}
+
+button {
+    border: none;
+    padding: 14px 22px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: .2s;
+}
+
+button:hover {
+    transform: scale(1.03);
+    opacity: .9;
+}
+
+.btn-primary {
+    background: #5656c9;
+    color: white;
+    width: 100%;
+}
+
+.btn-secondary {
+    background: #eee;
+    color: #333;
+    margin-top: 15px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.competitors {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    margin: 25px 0;
+}
+
+.player {
+    flex: 1;
+    padding: 15px;
+    background: #f0f0ff;
+    border-radius: 12px;
+    font-weight: bold;
+    color: #34348c;
+    overflow-wrap: anywhere;
+}
+
+.round {
+    color: #555;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+.wheel-container {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    margin: 25px auto;
+}
+
+.wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 8px solid #29294d;
+    /* A ordem precisa ser igual à do array "colors" no JavaScript. */
+    background: conic-gradient(
+        #2875e8 0deg 60deg,
+        #ffcc00 60deg 120deg,
+        #28b463 120deg 180deg,
+        #161616 180deg 240deg,
+        #8735c9 240deg 300deg,
+        #e53935 300deg 360deg
+    );
+    transition: transform 4s cubic-bezier(.15,.75,.15,1);
+    position: relative;
+}
+
+.pointer {
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 17px solid transparent;
+    border-right: 17px solid transparent;
+    border-top: 30px solid #29294d;
+    z-index: 5;
+}
+
+
+.wheel-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    background: white;
+    border: 6px solid #29294d;
+    z-index: 2;
+}
+
+.color-result {
+    font-size: 25px;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+.color-box {
+    width: 90px;
+    height: 90px;
+    margin: 15px auto;
+    border-radius: 18px;
+    border: 4px solid #ddd;
+    box-shadow: 0 5px 15px rgba(0,0,0,.2);
+}
+
+.btn-spin {
+    background: #29294d;
+    color: white;
+    width: 100%;
+}
+
+.winner-options {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.winner-options button {
+    flex: 1;
+    background: #5656c9;
+    color: white;
+    min-width: 0;
+}
+
+.history {
+    margin-top: 25px;
+    text-align: left;
+    background: #f5f5fa;
+    border-radius: 12px;
+    padding: 18px;
+}
+
+.history h3 {
+    margin-bottom: 12px;
+    color: #29294d;
+}
+
+.history-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.final-result {
+    background: linear-gradient(135deg, #29294d, #5656c9);
+    color: white;
+    padding: 30px 20px;
+    border-radius: 16px;
+    margin-top: 20px;
+}
+
+.final-result h2 {
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
+.final-name {
+    font-size: 36px;
+    font-weight: bold;
+    margin: 20px 0;
+    overflow-wrap: anywhere;
+}
+
+.score {
+    font-size: 19px;
+    margin-top: 15px;
+}
+
+@media(max-width: 450px) {
+    .container {
+        padding: 20px;
+    }
+
+    .wheel-container {
+        width: 240px;
+        height: 240px;
+    }
+
+    .final-name {
+        font-size: 28px;
+    }
+
+    .winner-options {
+        flex-direction: column;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🎨 Sorteio de Cores</h1>
+    <p class="subtitle">Vamos brincar? 💜</p>
+
+    <!-- CADASTRO -->
+    <div id="setup">
+        <input type="text" id="player1" placeholder="Nome do primeiro competidor">
+        <input type="text" id="player2" placeholder="Nome do segundo competidor">
+        <button class="btn-primary" onclick="startGame()">
+            COMEÇAR A BRINCADEIRA
+        </button>
+    </div>
+
+    <!-- JOGO -->
+    <div id="game" class="hidden">
+
+        <div class="competitors">
+            <div class="player" id="name1"></div>
+            <div class="player" id="name2"></div>
+        </div>
+
+        <div class="round" id="roundText">RODADA 1 DE 6</div>
+
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <div class="wheel" id="wheel">
+                <div class="wheel-center"></div>
+            </div>
+        </div>
+
+        <button class="btn-spin" id="spinButton" onclick="spinWheel()">
+            🎯 GIRAR ROLETA
+        </button>
+
+        <div id="resultArea" class="hidden">
+
+            <div class="color-result" id="colorName"></div>
+            <div class="color-box" id="colorBox"></div>
+
+            <p><strong>Quem venceu esta rodada?</strong></p>
+
+            <div class="winner-options">
+                <button id="winner1" onclick="chooseWinner(1)"></button>
+                <button id="winner2" onclick="chooseWinner(2)"></button>
+            </div>
+
+        </div>
+
+        <div class="history">
+            <h3>📋 Histórico das rodadas</h3>
+            <div id="historyList">
+                Nenhuma rodada concluída.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RESULTADO FINAL -->
+    <div id="final" class="hidden">
+
+        <div class="final-result">
+            <h2>🏆 TEMOS UM DESTAQUE! 🎉</h2>
+            <p>Quem ganhou mais rodadas foi:</p>
+
+            <div class="final-name" id="champion"></div>
+
+            <div class="score" id="finalScore"></div>
+        </div>
+
+        <div class="history">
+            <h3>📋 Resultado completo</h3>
+            <div id="finalHistory"></div>
+        </div>
+
+        <button class="btn-primary" style="margin-top:20px"
+            onclick="location.reload()">
+            🔄 RECOMEÇAR A BRINCADEIRA
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+const colors = [
+    {name: "Azul", hex: "#2875e8"},
+    {name: "Amarelo", hex: "#ffcc00"},
+    {name: "Verde", hex: "#28b463"},
+    {name: "Preto", hex: "#161616"},
+    {name: "Roxo", hex: "#8735c9"},
+    {name: "Vermelho", hex: "#e53935"}
+];
+
+let players = [];
+let scores = [0, 0];
+let availableColors = [];
+let history = [];
+let currentColor = null;
+let round = 0;
+let spinning = false;
+let rotation = 0;
+
+
+// Reduz a saturação e aumenta levemente a luminosidade da cor,
+// deixando o segmento mais discreto sem perder sua identidade.
+function mutedColor(hex) {
+    const value = hex.replace("#", "");
+    const r = parseInt(value.substring(0, 2), 16) / 255;
+    const g = parseInt(value.substring(2, 4), 16) / 255;
+    const b = parseInt(value.substring(4, 6), 16) / 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0;
+    let s = 0;
+    let l = (max + min) / 2;
+
+    if (max !== min) {
+        const delta = max - min;
+        s = l > 0.5 ? delta / (2 - max - min) : delta / (max + min);
+
+        switch (max) {
+            case r: h = (g - b) / delta + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / delta + 2; break;
+            case b: h = (r - g) / delta + 4; break;
+        }
+
+        h /= 6;
+    }
+
+    // Mantém apenas 35% da saturação original e clareia um pouco.
+    s *= 0.35;
+    l = Math.min(0.78, l + 0.08);
+
+    const hueToRgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+    };
+
+    let nr, ng, nb;
+    if (s === 0) {
+        nr = ng = nb = l;
+    } else {
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        nr = hueToRgb(p, q, h + 1 / 3);
+        ng = hueToRgb(p, q, h);
+        nb = hueToRgb(p, q, h - 1 / 3);
+    }
+
+    const toHex = channel =>
+        Math.round(channel * 255).toString(16).padStart(2, "0");
+
+    return `#${toHex(nr)}${toHex(ng)}${toHex(nb)}`;
+}
+
+// Atualiza a roleta: cores já sorteadas ficam menos vibrantes,
+// mas continuam reconhecíveis.
+function updateWheel() {
+    const wheel = document.getElementById("wheel");
+    const usedNames = new Set(
+        colors
+            .filter(color => !availableColors.some(
+                available => available.name === color.name
+            ))
+            .map(color => color.name)
+    );
+
+    const stops = colors.map((color, index) => {
+        const start = index * 60;
+        const end = (index + 1) * 60;
+        const displayedColor = usedNames.has(color.name)
+            ? mutedColor(color.hex)
+            : color.hex;
+
+        return `${displayedColor} ${start}deg ${end}deg`;
+    });
+
+    wheel.style.background = `conic-gradient(${stops.join(", ")})`;
+}
+
+function startGame() {
+
+    const p1 = document.getElementById("player1").value.trim();
+    const p2 = document.getElementById("player2").value.trim();
+
+    if (!p1 || !p2) {
+        alert("Digite o nome dos dois competidores!");
+        return;
+    }
+
+    if (p1.toLowerCase() === p2.toLowerCase()) {
+        alert("Digite dois nomes diferentes!");
+        return;
+    }
+
+    players = [p1, p2];
+    scores = [0, 0];
+    availableColors = [...colors];
+    history = [];
+    round = 0;
+    rotation = 0;
+    updateWheel();
+
+    document.getElementById("setup").classList.add("hidden");
+    document.getElementById("game").classList.remove("hidden");
+
+    document.getElementById("name1").textContent = p1;
+    document.getElementById("name2").textContent = p2;
+
+    updateHistory();
+    updateRound();
+
+}
+
+function updateRound() {
+    document.getElementById("roundText").textContent =
+        `RODADA ${round + 1} DE 6`;
+}
+
+function spinWheel() {
+
+    if (spinning || round >= 6) return;
+
+    spinning = true;
+
+    document.getElementById("spinButton").disabled = true;
+    document.getElementById("resultArea").classList.add("hidden");
+
+    /*
+      REGRA ESPECIAL:
+      O vermelho fica reservado para a sexta rodada.
+      Nas cinco primeiras rodadas, sorteamos
+      aleatoriamente entre as outras cores.
+    */
+
+    let index;
+
+    if (round === 5) {
+        index = availableColors.findIndex(
+            color => color.name === "Vermelho"
+        );
+    } else {
+
+        const possibleIndexes = availableColors
+            .map((color, i) => i)
+            .filter(i => availableColors[i].name !== "Vermelho");
+
+        index = possibleIndexes[
+            Math.floor(Math.random() * possibleIndexes.length)
+        ];
+
+    }
+
+    currentColor = availableColors[index];
+    const selectedColor = currentColor;
+
+    // Como o gradiente segue a ordem do array colors, este índice
+    // corresponde diretamente à fatia visual da roleta.
+    const colorIndex = colors.findIndex(
+        color => color.name === selectedColor.name
+    );
+
+    /*
+      A roleta gira visualmente e para na posição
+      correspondente à cor sorteada.
+    */
+
+    const segmentAngle = 360 / 6;
+
+    const targetAngle =
+        360 - (colorIndex * segmentAngle + segmentAngle / 2);
+
+    const currentNormalized = rotation % 360;
+
+    const extraRotation =
+        (targetAngle - currentNormalized + 360) % 360;
+
+    rotation += 360 * 5 + extraRotation;
+
+    document.getElementById("wheel").style.transform =
+        `rotate(${rotation}deg)`;
+
+    setTimeout(() => {
+
+        document.getElementById("colorName").textContent =
+            "Cor sorteada: " + selectedColor.name;
+
+        document.getElementById("colorBox").style.background =
+            selectedColor.hex;
+
+        document.getElementById("winner1").textContent = players[0];
+        document.getElementById("winner2").textContent = players[1];
+
+        document.getElementById("resultArea").classList.remove("hidden");
+
+        spinning = false;
+
+    }, 4100);
+
+}
+
+function chooseWinner(playerNumber) {
+
+    if (!currentColor) return;
+
+    const winnerIndex = playerNumber - 1;
+
+    scores[winnerIndex]++;
+
+    history.push({
+        round: round + 1,
+        color: currentColor.name,
+        hex: currentColor.hex,
+        winner: players[winnerIndex]
+    });
+
+    // Remove a cor utilizada para impedir repetição.
+    availableColors = availableColors.filter(
+        color => color.name !== currentColor.name
+    );
+    updateWheel();
+
+    currentColor = null;
+    round++;
+
+    updateHistory();
+
+    document.getElementById("resultArea").classList.add("hidden");
+    document.getElementById("spinButton").disabled = false;
+
+    if (round === 6) {
+        finishGame();
+    } else {
+        updateRound();
+    }
+
+}
+
+function updateHistory() {
+
+    const html = history.map(item => `
+        <div class="history-item">
+            <strong>Rodada ${item.round}</strong> -
+            <span style="color:${item.hex};font-weight:bold">
+                ${item.color}
+            </span>
+            <br>
+            🏆 Ganhador: <strong>${escapeHTML(item.winner)}</strong>
+        </div>
+    `).join("");
+
+    document.getElementById("historyList").innerHTML =
+        html || "Nenhuma rodada concluída.";
+
+}
+
+function finishGame() {
+
+    document.getElementById("game").classList.add("hidden");
+    document.getElementById("final").classList.remove("hidden");
+
+    let championText;
+
+    if (scores[0] > scores[1]) {
+        championText = players[0];
+    } else if (scores[1] > scores[0]) {
+        championText = players[1];
+    } else {
+        championText = "EMPATE!";
+    }
+
+    document.getElementById("champion").textContent =
+        championText;
+
+    document.getElementById("finalScore").innerHTML =
+        `${escapeHTML(players[0])}: <strong>${scores[0]} rodadas ganhas</strong>
+        <br>
+        ${escapeHTML(players[1])}: <strong>${scores[1]} rodadas ganhas</strong>`;
+
+    document.getElementById("finalHistory").innerHTML =
+        history.map(item => `
+            <div class="history-item">
+                <strong>Rodada ${item.round}</strong> -
+                <span style="color:${item.hex};font-weight:bold">
+                    ${item.color}
+                </span>
+                <br>
+                🏆 ${escapeHTML(item.winner)}
+            </div>
+        `).join("");
+
+}
+
+function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+    })[char]);
+}
+
+</script>
+
+</body>
+</html>
